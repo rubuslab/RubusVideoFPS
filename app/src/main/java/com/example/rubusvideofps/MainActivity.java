@@ -1,7 +1,10 @@
 package com.example.rubusvideofps;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
@@ -12,6 +15,7 @@ import android.view.SurfaceView;
 import android.graphics.PixelFormat;
 import android.graphics.ImageFormat;
 import android.view.View;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,15 +25,50 @@ public class MainActivity extends AppCompatActivity {
     private Camera mCamera = null;     // Camera对象，相机预览
 
     private String TAG = "main activity";
-    private int mPreviewWidth = 260;
-    private int mPreviewHeight = 462;
-
+    private int mPreviewWidth = 480;
+    private int mPreviewHeight = 320;
     private Boolean mInit = false;
+
+    // camera permission
+    boolean mHasCameraPermission = false;
+    static final int REQUEST_CODE_ASK_SINGLE_PERMISSION = 0;
+    int mNotifyCheckCameraPermission = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
+
+    boolean CheckCameraPermission() {
+        int hasPermission = PackageManager.PERMISSION_DENIED;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            hasPermission = checkSelfPermission(Manifest.permission.CAMERA);
+            if (hasPermission == PackageManager.PERMISSION_GRANTED) {
+                mHasCameraPermission = true;
+            } else {
+                Toast.makeText(this, "If not grant Camera permission, please grant this app Camera permission in system setting.", Toast.LENGTH_LONG).show();
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CODE_ASK_SINGLE_PERMISSION);
+            }
+        } else {
+            if (mNotifyCheckCameraPermission == 0) {
+                Toast.makeText(this, "If not grant Camera permission, please grant this app Camera permission in system setting.", Toast.LENGTH_LONG).show();
+                ++mNotifyCheckCameraPermission;
+            }
+            mHasCameraPermission = true;
+        }
+        return mHasCameraPermission;
+    }
+
+    public void onRequestPermissionResult(int requestCode, @NonNull String[] permission, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_ASK_SINGLE_PERMISSION:
+                if (grantResults.length > 0) {
+                    mHasCameraPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                }
+                break;
+            default: break;
+        }
     }
 
     private void Init() {
@@ -39,11 +78,17 @@ public class MainActivity extends AppCompatActivity {
         surfaceView.setKeepScreenOn(true);
         surfaceHolder.addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void surfaceCreated(SurfaceHolder surfaceHolder) {}
+            public void surfaceCreated(SurfaceHolder surfaceHolder) {
+                Log.w(TAG, "surfaceCreated");
+            }
             @Override
-            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {}
+            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+                Log.w(TAG, "surfaceChanged");
+            }
             @Override
-            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+            public void surfaceDestroyed(SurfaceHolder surfaceHolder)
+            {
+                Log.w(TAG, "surfaceDestroyed");
                 stopPreview();
             }
         });
@@ -51,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onStartPreview(View view) {
+        if (!CheckCameraPermission()) return;
         Init();
         stopPreview();
 
@@ -62,12 +108,23 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPreviewFrame(byte[] bytes, Camera camera) {
                 // bytes即为相机采集出来的单帧Yuv格式数据，可转为Bitmap等格式使用
-                Log.i(TAG, "onPreviewFrame");
+                // Log.i(TAG, "onPreviewFrame");
             }
         });
 
         //相机的一些设置：
         Camera.Parameters parameters = mCamera.getParameters();
+        List<Size> previewSizes = parameters.getSupportedPreviewSizes();
+        List<Integer> previewFormats = parameters.getSupportedPreviewFormats();
+        for (int i = 0; i < previewFormats.size(); ++i) {
+            Integer pf = previewFormats.get(i);
+            Log.i(TAG, "preview formats: " + pf);
+        }
+        for (int i = 0; i < previewSizes.size(); ++i) {
+            Size s = previewSizes.get(i);
+            Log.i(TAG, "preview camera size width:" + s.width + ", height:" + s.height);
+        }
+
         //Camera Preview Callback的YUV420常用数据格式有两种：一个是NV21，一个是YV12。Android一般默认使用YUV_420_SP的格式（NV21）
         parameters.setPreviewFormat(ImageFormat.NV21);//设置回调数据的格式
         parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); //对应手机的height和width
@@ -89,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void stopPreview() {
         if (mCamera != null) {
+            Log.e(TAG, "stopPreview called.");
             mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
             mCamera.release();
@@ -173,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    // ----------------------
 
     public Camera open() {
         int numberOfCameras = Camera.getNumberOfCameras();

@@ -19,31 +19,40 @@
 
     <Button
         android:id="@+id/button_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="50dp"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="21dp"
+        android:layout_marginEnd="4dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
         android:onClick="onStartPreview"
         android:text="Start"
+        android:textAlignment="center"
+        android:textSize="12sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/button_stop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="50dp"
         android:layout_marginTop="7dp"
-        android:layout_marginEnd="21dp"
+        android:layout_marginEnd="4dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
         android:onClick="onStopPreview"
         android:text="Stop"
+        android:textAlignment="center"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_start" />
 
     <SurfaceView
         android:id="@+id/surface_video"
-        android:layout_width="260dp"
-        android:layout_height="462dp"
-        android:layout_marginStart="10dp"
+        android:layout_width="320dp"
+        android:layout_height="480dp"
+        android:layout_marginStart="2dp"
         android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
