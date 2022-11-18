@@ -20,8 +20,14 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.List;
 
-
 public class MainActivity extends AppCompatActivity {
+    private String PIXEL_FORMAT_YUV422SP = "NV16 <--> PIXEL_FORMAT_YUV422SP";
+    private String PIXEL_FORMAT_YUV420SP = "NV21 <--> PIXEL_FORMAT_YUV420SP";
+    private String PIXEL_FORMAT_YUV422I = "YUY2 <--> PIXEL_FORMAT_YUV422I";
+    private String PIXEL_FORMAT_YUV420P = "YV12 <--> PIXEL_FORMAT_YUV420P";
+    private String PIXEL_FORMAT_RGB565 = "RGB_565 <--> PIXEL_FORMAT_RGB565";
+    private String PIXEL_FORMAT_JPEG = "JPEG <--> PIXEL_FORMAT_JPEG";
+
     private Camera mCamera = null;     // Camera对象，相机预览
 
     private String TAG = "main activity";
@@ -118,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         List<Integer> previewFormats = parameters.getSupportedPreviewFormats();
         for (int i = 0; i < previewFormats.size(); ++i) {
             Integer pf = previewFormats.get(i);
-            Log.i(TAG, "preview formats: " + pf);
+            Log.i(TAG, "preview formats: " + pf + ", " + cameraFormatForPixelFormat(pf));
         }
         for (int i = 0; i < previewSizes.size(); ++i) {
             Size s = previewSizes.get(i);
@@ -176,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
                 List<Size> pictureSizes = mCamera.getParameters().getSupportedPictureSizes();
                 List<Size> previewSizes = mCamera.getParameters().getSupportedPreviewSizes();
                 List<Integer> previewFormats = mCamera.getParameters().getSupportedPreviewFormats();
-                List<Integer> previewFrameRates = mCamera.getParameters().getSupportedPreviewFrameRates();
                 Log.i(TAG+"initCamera", "cyy support parameters is ");
                 Size psize = null;
                 for (int i = 0; i < pictureSizes.size(); i++)
@@ -189,11 +194,10 @@ public class MainActivity extends AppCompatActivity {
                     psize = previewSizes.get(i);
                     Log.i(TAG+"initCamera", "PreviewSize,width: " + psize.width + " height" + psize.height);
                 }
-                Integer pf = null;
                 for (int i = 0; i < previewFormats.size(); i++)
                 {
-                    pf = previewFormats.get(i);
-                    Log.i(TAG+"initCamera", "previewformates:" + pf);
+                    Integer pf = previewFormats.get(i);
+                    Log.i(TAG+"initCamera", "previewformates: " + cameraFormatForPixelFormat(pf));
                 }
                 // 设置拍照和预览图片大小
                 parameters.setPictureSize(640, 480); //指定拍照图片的大小
@@ -241,5 +245,17 @@ public class MainActivity extends AppCompatActivity {
             return Camera.open(i);
         }
         return null;
+    }
+
+    private String cameraFormatForPixelFormat(int pixel_format) {
+        switch (pixel_format) {
+            case ImageFormat.NV16: return PIXEL_FORMAT_YUV422SP;
+            case ImageFormat.NV21: return PIXEL_FORMAT_YUV420SP;
+            case ImageFormat.YUY2: return PIXEL_FORMAT_YUV422I;
+            case ImageFormat.YV12: return PIXEL_FORMAT_YUV420P;
+            case ImageFormat.RGB_565: return PIXEL_FORMAT_RGB565;
+            case ImageFormat.JPEG: return PIXEL_FORMAT_JPEG;
+            default: return null;
+        }
     }
 }
