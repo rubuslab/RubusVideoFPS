@@ -6,17 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.859"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.866" />
-
     <Button
         android:id="@+id/button_start"
         android:layout_width="60dp"
@@ -50,11 +39,75 @@
 
     <SurfaceView
         android:id="@+id/surface_video"
-        android:layout_width="320dp"
-        android:layout_height="480dp"
-        android:layout_marginStart="2dp"
+        android:layout_width="240dp"
+        android:layout_height="320dp"
+        android:layout_marginStart="40dp"
         android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/switch_show_fps"
+        android:layout_width="49dp"
+        android:layout_height="27dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="16dp"
+        android:textAlignment="viewStart"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="56dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="9dp"
+        android:fontFamily="serif"
+        android:text="Show FPS"
+        android:textAlignment="viewStart"
+        android:textColor="#003D6E"
+        android:textSize="12sp"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_stop" />
+
+    <com.example.rubusvideofps.ShowLineView
+        android:id="@+id/show_line_view"
+        android:layout_width="320dp"
+        android:layout_height="240dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/surface_video" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="11dp"
+        android:layout_height="22dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="5dp"
+        android:text="&gt;"
+        android:textAlignment="viewEnd"
+        android:textColor="#03A9F4"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/surface_video"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="11dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="18dp"
+        android:text="&lt;"
+        android:textAlignment="viewStart"
+        android:textColor="#03A9F4"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/surface_video"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

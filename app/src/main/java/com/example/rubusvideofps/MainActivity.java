@@ -15,6 +15,8 @@ import android.view.SurfaceView;
 import android.graphics.PixelFormat;
 import android.graphics.ImageFormat;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -31,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private Camera mCamera = null;     // Camera对象，相机预览
 
     private String TAG = "main activity";
-    private int mPreviewWidth = 480;
-    private int mPreviewHeight = 320;
+    private int mPreviewWidth = 320;
+    private int mPreviewHeight = 240;
     private Boolean mInit = false;
 
     // camera permission
@@ -40,10 +42,27 @@ public class MainActivity extends AppCompatActivity {
     static final int REQUEST_CODE_ASK_SINGLE_PERMISSION = 0;
     int mNotifyCheckCameraPermission = 0;
 
+    // Switch button
+    Switch mSwitchButton;
+    boolean mShowFps = false;
+
+    // show line view
+    ShowLineView mShowLineView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mSwitchButton = (Switch)findViewById(R.id.switch_show_fps);
+        mShowLineView = (ShowLineView)findViewById(R.id.show_line_view);
+        mSwitchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                mShowFps = isChecked;
+                Log.i(TAG, "switch fps button checked: " + isChecked);
+            }
+        });
     }
 
     boolean CheckCameraPermission() {
@@ -113,8 +132,13 @@ public class MainActivity extends AppCompatActivity {
         mCamera.setPreviewCallback(new Camera.PreviewCallback() {
             @Override
             public void onPreviewFrame(byte[] bytes, Camera camera) {
-                // bytes即为相机采集出来的单帧Yuv格式数据，可转为Bitmap等格式使用
-                // Log.i(TAG, "onPreviewFrame");
+                if (mShowFps) {
+                    // bytes即为相机采集出来的单帧Yuv格式数据，可转为Bitmap等格式使用
+                    Size s = camera.getParameters().getPreviewSize();
+                    Log.i(TAG, "onPreviewFrame, preview size width: " + s.width + ", height: " + s.height);
+                    int startIndex = mPreviewWidth * 20 - 1;
+                    mShowLineView.DrawYUVImageLineData(bytes, startIndex, mPreviewWidth);
+                }
             }
         });
 
@@ -149,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
     public void onStopPreview(View view) {
         stopPreview();
     }
-
     public void stopPreview() {
         if (mCamera != null) {
             Log.e(TAG, "stopPreview called.");
@@ -158,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
             mCamera.release();
             mCamera = null;
         }
+        mSwitchButton.setChecked(false);
     }
 
     // ----------- video preview -----------
