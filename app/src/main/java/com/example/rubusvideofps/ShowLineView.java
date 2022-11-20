@@ -6,17 +6,19 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 public class ShowLineView extends View {
+    String TAG = "ShowLineView";
     private Paint mPaint;    ///< 画笔
 
-    private byte[] mYUV_yBuffer = null; // NV21-Y buffer
-    private int mYStartIndex = 0;
-    private int mYImageWidth = 0;
+    private int mBarPosToBorder = 20;
+    Interleaved25Bar m25Bar;
+
 
     // 在java代码里new的时候会用到
     // @param context
@@ -43,7 +45,7 @@ public class ShowLineView extends View {
 
     private void onShowLineViewInit() {
         mPaint = new Paint();
-        mPaint.setColor(Color.parseColor("#F50808"));
+        m25Bar = new Interleaved25Bar();
     }
 
     @Override
@@ -53,29 +55,58 @@ public class ShowLineView extends View {
         ///< 2.进行绘制
 
         // draw one gray line in YUV image
-        if (mYUV_yBuffer != null && mYImageWidth > 0) {
+        if (m25Bar.mPreviewLineBuffer != null && m25Bar.mPreviewImageShortSideLength > 0) {
             // start draw line
-            Paint paint = new Paint();
-            // paint.setStyle(Paint.Style.FILL);
-            for (int i = 0; i < mYImageWidth; ++i) {
-                int gray = mYUV_yBuffer[mYStartIndex + i] + 16;
-                paint.setARGB(255, gray, gray, gray);
+            for (int i = 0; i < m25Bar.mPreviewImageShortSideLength; ++i) {
+                int gray = m25Bar.mPreviewLineBuffer[i];
+                mPaint.setARGB(255, gray, gray, gray);
 
-                canvas.drawPoint(i * 2, 10, paint);
-                canvas.drawPoint(i * 2 + 1, 10, paint);
+                //canvas.drawPoint(i * 2, 10, mPaint);
+                //canvas.drawPoint(i * 2 + 1, 10, mPaint);
+
+                canvas.drawLine(i * 2, 10, i * 2, 110, mPaint);
+                canvas.drawLine(i * 2 + 1, 10, i * 2 + 1, 110, mPaint);
             }
-            // end draw line
-            mYUV_yBuffer = null;
-            mYImageWidth = 0;
         }
 
-        canvas.drawCircle(10,10, 5, mPaint);
+        mPaint.setColor(Color.parseColor("#F50808"));
+        canvas.drawCircle(5,5, 5, mPaint);
     }
 
-    public void DrawYUVImageLineData(byte[] yData, int yStartIndex, int yImageWidth) {
-        mYUV_yBuffer = yData;
-        mYStartIndex = yStartIndex;
-        mYImageWidth = yImageWidth;
+    // set preview image short side length
+    public void SetPreviewShortSideLength(int len) {
+        m25Bar.Initialize(len);
+    }
+
+    public void UpdateYUVImageData(byte[] yData, int yImageWidth, int yImageHeight) {
+        int count = 0;
+        for (int h = 0; h < m25Bar.mPreviewImageShortSideLength; ++h) {
+            int index = h * yImageWidth + mBarPosToBorder;
+            short y = (short)(yData[index] & 0xFF);
+            count += y;
+            m25Bar.mPreviewLineBuffer[m25Bar.mPreviewImageShortSideLength - h - 1] = y;
+        }
+
+        // 平均值法二值化
+        short avg = (short)(count / m25Bar.mPreviewImageShortSideLength);
+        avg = avg > 128 ? 128 : avg;
+
+        // String s ="";
+        for (int i = 0; i < m25Bar.mPreviewImageShortSideLength; ++i) {
+            short v = m25Bar.mPreviewLineBuffer[i];
+            short gray = (short)(v >= avg ? 255 : 0);  // 0: black, 255: white
+            // s += gray == 0 ? "|" : "-";
+            m25Bar.mPreviewLineBuffer[i] = gray;
+        }
+        // Log.i(TAG, "line: " + s);
+    }
+
+    public String GetBar25Code() {
+        return m25Bar.Decode();
+    }
+
+    public void InvalidateView() {
         super.invalidate();
     }
 }
+

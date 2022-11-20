@@ -1,5 +1,9 @@
 package com.example.rubusvideofps;
 
+import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
+import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
+import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,7 +21,10 @@ import android.graphics.ImageFormat;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     // Switch button
     Switch mSwitchButton;
     boolean mShowFps = false;
+    TextView mBar25CodeView;
 
     // show line view
     ShowLineView mShowLineView;
@@ -55,7 +63,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mSwitchButton = (Switch)findViewById(R.id.switch_show_fps);
+        mBar25CodeView = (TextView)findViewById(R.id.bar25_code);
         mShowLineView = (ShowLineView)findViewById(R.id.show_line_view);
+        mShowLineView.SetPreviewShortSideLength(mPreviewHeight);
         mSwitchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -134,10 +144,12 @@ public class MainActivity extends AppCompatActivity {
             public void onPreviewFrame(byte[] bytes, Camera camera) {
                 if (mShowFps) {
                     // bytes即为相机采集出来的单帧Yuv格式数据，可转为Bitmap等格式使用
-                    Size s = camera.getParameters().getPreviewSize();
-                    Log.i(TAG, "onPreviewFrame, preview size width: " + s.width + ", height: " + s.height);
-                    int startIndex = mPreviewWidth * 20 - 1;
-                    mShowLineView.DrawYUVImageLineData(bytes, startIndex, mPreviewWidth);
+                    // Size s = camera.getParameters().getPreviewSize();
+                    // Log.i(TAG, "onPreviewFrame, preview size width: " + s.width + ", height: " + s.height);
+                    mShowLineView.UpdateYUVImageData(bytes, mPreviewWidth, mPreviewHeight);
+                    String code = mShowLineView.GetBar25Code();
+                    mBar25CodeView.setText("> " + code + " <");
+                    mShowLineView.InvalidateView();
                 }
             }
         });
@@ -158,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
         //Camera Preview Callback的YUV420常用数据格式有两种：一个是NV21，一个是YV12。Android一般默认使用YUV_420_SP的格式（NV21）
         parameters.setPreviewFormat(ImageFormat.NV21);//设置回调数据的格式
         parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); //对应手机的height和width
+        parameters.setFocusMode(FOCUS_MODE_CONTINUOUS_PICTURE);
         mCamera.setParameters(parameters); //传入参数
         try {
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.surface_video);
