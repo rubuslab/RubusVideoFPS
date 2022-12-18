@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.hardware.Camera;
@@ -26,6 +27,9 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -56,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
 
     // show line view
     ShowLineView mShowLineView;
+
+    private boolean mDumpYuvFrameOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +101,19 @@ public class MainActivity extends AppCompatActivity {
         return mHasCameraPermission;
     }
 
+    void CheckStoragePermission() {
+        int hasPermission = PackageManager.PERMISSION_DENIED;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            hasPermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if (hasPermission != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "If not grant Storage permission, please grant this app Storage permission in system setting.", Toast.LENGTH_LONG).show();
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_ASK_SINGLE_PERMISSION);
+            }
+        } else {
+            Toast.makeText(this, "If not grant Storage permission, please grant this app Storage permission in system setting.", Toast.LENGTH_LONG).show();
+        }
+    }
+
     public void onRequestPermissionResult(int requestCode, @NonNull String[] permission, @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_ASK_SINGLE_PERMISSION:
@@ -131,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onStartPreview(View view) {
+        CheckStoragePermission();
         if (!CheckCameraPermission()) return;
         Init();
         stopPreview();
@@ -143,6 +163,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPreviewFrame(byte[] bytes, Camera camera) {
                 if (mShowFps) {
+                    // -------------
+                    // write a frame yuv to file
+                    if (!mDumpYuvFrameOnce) {
+                        mDumpYuvFrameOnce = true;
+                        String filename = String.format("yuv_1_frame_%dx%x.yuv", mPreviewWidth, mPreviewHeight);
+                        try {
+                            FileOutputStream out = openFileOutput(filename, Context.MODE_PRIVATE | Context.MODE_APPEND);
+                            out.write(bytes);
+                            out.close();
+                        } catch (IOException e) {
+                            Log.e(TAG,"Write file failed");
+                            e.printStackTrace();
+                        }
+                    }
+                    // -------------
+
                     // bytes即为相机采集出来的单帧Yuv格式数据，可转为Bitmap等格式使用
                     // Size s = camera.getParameters().getPreviewSize();
                     // Log.i(TAG, "onPreviewFrame, preview size width: " + s.width + ", height: " + s.height);
