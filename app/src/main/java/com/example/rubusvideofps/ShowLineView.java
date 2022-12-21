@@ -17,8 +17,10 @@ public class ShowLineView extends View {
     private Paint mPaint;    ///< 画笔
 
     private int mBarPosToBorder = 20;
-    Interleaved25Bar m25Bar;
 
+    int mPreviewImageShortSideLength = 0;
+    Interleaved25Bar m25Bar;
+    ITF25ProgressBarsDecoder mItf25ProgressBar;
 
     // 在java代码里new的时候会用到
     // @param context
@@ -46,6 +48,7 @@ public class ShowLineView extends View {
     private void onShowLineViewInit() {
         mPaint = new Paint();
         m25Bar = new Interleaved25Bar();
+        mItf25ProgressBar = new ITF25ProgressBarsDecoder();
     }
 
     @Override
@@ -75,31 +78,40 @@ public class ShowLineView extends View {
 
     // set preview image short side length
     public void SetPreviewShortSideLength(int len) {
+        mPreviewImageShortSideLength = len;
+        mItf25ProgressBar.Initialize(len);
         m25Bar.Initialize(len);
     }
 
-    public void UpdateYUVImageData(byte[] yData, int yImageWidth, int yImageHeight) {
+    private void UpdateYUV(byte[] yData, int yImageWidth, int yImageHeight, short[] previewLineBuff) {
         int count = 0;
-        for (int h = 0; h < m25Bar.mPreviewImageShortSideLength; ++h) {
+        for (int h = 0; h < mPreviewImageShortSideLength; ++h) {
             int index = h * yImageWidth + mBarPosToBorder;
             short y = (short)(yData[index] & 0xFF);
             count += y;
-            m25Bar.mPreviewLineBuffer[m25Bar.mPreviewImageShortSideLength - h - 1] = y;
+            previewLineBuff[mPreviewImageShortSideLength - h - 1] = y;
         }
 
         // 平均值法二值化
-        short avg = (short)(count / m25Bar.mPreviewImageShortSideLength);
+        short avg = (short)(count / mPreviewImageShortSideLength);
         avg = avg > 128 ? 128 : avg;
 
         // String s ="";
-        for (int i = 0; i < m25Bar.mPreviewImageShortSideLength; ++i) {
-            short v = m25Bar.mPreviewLineBuffer[i];
+        for (int i = 0; i < mPreviewImageShortSideLength; ++i) {
+            short v = previewLineBuff[i];
             short gray = (short)(v >= avg ? 255 : 0);  // 0: black, 255: white
             // s += gray == 0 ? "|" : "-";
-            m25Bar.mPreviewLineBuffer[i] = gray;
+            previewLineBuff[i] = gray;
         }
         // Log.i(TAG, "line: " + s);
     }
+
+    public void UpdateYUVImageData(byte[] yData, int yImageWidth, int yImageHeight) {
+        UpdateYUV(yData, yImageWidth, yImageHeight, m25Bar.mPreviewLineBuffer);
+        UpdateYUV(yData, yImageWidth, yImageHeight, mItf25ProgressBar.mPreviewLineBuffer);
+    }
+
+    public int GetProgressBarPos() { return mItf25ProgressBar.DecodeAndGetPos(); }
 
     public String GetBar25Code() {
         return m25Bar.Decode();

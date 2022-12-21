@@ -122,4 +122,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/surface_video" />
 
+    <TextView
+        android:id="@+id/text_progress_bar"
+        android:layout_width="91dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="144dp"
+        android:text="TextView"
+        app:layout_constraintStart_toEndOf="@+id/bar25_code"
+        app:layout_constraintTop_toBottomOf="@+id/switch_show_fps" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

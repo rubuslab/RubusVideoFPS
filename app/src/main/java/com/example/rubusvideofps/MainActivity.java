@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     Switch mSwitchButton;
     boolean mShowFps = false;
     TextView mBar25CodeView;
+    TextView mProgressBarPos;
 
     // show line view
     ShowLineView mShowLineView;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         mSwitchButton = (Switch)findViewById(R.id.switch_show_fps);
         mBar25CodeView = (TextView)findViewById(R.id.bar25_code);
         mShowLineView = (ShowLineView)findViewById(R.id.show_line_view);
+        mProgressBarPos = (TextView)findViewById(R.id.text_progress_bar);
         mShowLineView.SetPreviewShortSideLength(mPreviewHeight);
         mSwitchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -184,6 +186,8 @@ public class MainActivity extends AppCompatActivity {
                     // Log.i(TAG, "onPreviewFrame, preview size width: " + s.width + ", height: " + s.height);
                     mShowLineView.UpdateYUVImageData(bytes, mPreviewWidth, mPreviewHeight);
                     String code = mShowLineView.GetBar25Code();
+                    int pos = mShowLineView.GetProgressBarPos();
+                    mProgressBarPos.setText(String.format("%d", pos));
                     mBar25CodeView.setText("> " + code + " <");
                     mShowLineView.InvalidateView();
                 }
@@ -206,7 +210,8 @@ public class MainActivity extends AppCompatActivity {
         //Camera Preview Callback的YUV420常用数据格式有两种：一个是NV21，一个是YV12。Android一般默认使用YUV_420_SP的格式（NV21）
         parameters.setPreviewFormat(ImageFormat.NV21);//设置回调数据的格式
         parameters.setPreviewSize(mPreviewWidth, mPreviewHeight); //对应手机的height和width
-        parameters.setFocusMode(FOCUS_MODE_CONTINUOUS_PICTURE);
+        // parameters.setFocusMode(FOCUS_MODE_CONTINUOUS_PICTURE);
+        parameters.setFocusMode(FOCUS_MODE_CONTINUOUS_VIDEO);
         mCamera.setParameters(parameters); //传入参数
         try {
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.surface_video);
