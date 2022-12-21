@@ -139,45 +139,7 @@ public class ITF25ProgressBarsDecoder {
         int posRightIndex = enderLeftIndex - 2;
         int posLeftIndex = starterRightIndex + 2;
         for (int posIndex = posRightIndex; posIndex >= posLeftIndex; --posIndex) {
-            Bar bar = mBars.get(posIndex);
-            if (bar.isBlack) {
-                // found pos bar
-                // 统计进度块左边所有Bars的宽度，换算成白色小条Bar，计算进度条Pos值。
-                int posLeftBarsWidth = 0;
-                for (int i = posIndex - 1; i > starterRightIndex; i--) {
-                    posLeftBarsWidth += mBars.elementAt(i).width;
-                }
-
-                int posRightBarsWidth = 0;
-                for (int i = posIndex + 1; i < enderLeftIndex; i++) {
-                    posRightBarsWidth += mBars.elementAt(i).width;
-                }
-
-                float avgSmallBarWidth = (mStarterSmallWhiteSpaceBarWidth + mEnderSmallWhiteSpaceBarWidth) / 2.0f;
-                float leftEquivalentSmallBars = posLeftBarsWidth / avgSmallBarWidth;
-                float rightEquivalentSmallBars = posRightBarsWidth / avgSmallBarWidth;
-
-                int roundEquivalentLeftSmallBars = Math.round(leftEquivalentSmallBars);
-                int roundEquivalentRightSmallBars = Math.round(rightEquivalentSmallBars);
-                int posValue = roundEquivalentLeftSmallBars - 1;  // skip first white small bar
-                // progressPos = posValue >= 0 ? posValue : 0;
-                progressPos = posValue;
-
-                float wholeProgressBarWidth = (float)(posLeftBarsWidth + posRightBarsWidth - 2.0f * avgSmallBarWidth);
-                float posPercent = (posLeftBarsWidth - avgSmallBarWidth) / wholeProgressBarWidth;
-                float equivalentAllBars = wholeProgressBarWidth / avgSmallBarWidth;
-                float equivalentLeftBars = posPercent * equivalentAllBars;
-                Log.e(TAG, String.format("posPercent: %5.3f, wholeProgressBarWidth: %5.3f, equivalentAllBars: %5.3f, equivalentLeftBars: %5.3f",
-                        posPercent, wholeProgressBarWidth, equivalentAllBars, equivalentLeftBars));
-                progressPos = Math.round(equivalentLeftBars);
-                // ----------
-                Log.e(TAG, String.format("avgSmallBarWidth: %5.3f, posLeftBarsWidth: %d, posRightBarsWidth: %d, " +
-                                "roundEquivalentLeftSmallBars: %d, roundEquivalentRightSmallBars: %d",
-                        avgSmallBarWidth, posLeftBarsWidth, posRightBarsWidth, roundEquivalentLeftSmallBars, roundEquivalentRightSmallBars));
-                Log.e(TAG, String.format("posValue: %d, posPercent: %5.3f, round pos percent: %d",
-                        posValue, posPercent, Math.round(posPercent)));
-                break;
-            }
+            progressPos += mBars.get(posIndex).isBlack ? 1 : 0;
         }
         return progressPos;
     }
