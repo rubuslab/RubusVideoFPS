@@ -1,7 +1,5 @@
 package com.example.rubusvideofps;
 
-import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
-import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
 import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
 
 import androidx.annotation.NonNull;
@@ -25,10 +23,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -56,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
     // Switch button
     Switch mSwitchButton;
     boolean mShowFps = false;
-    TextView mBar25CodeView;
     TextView mProgressBarPos;
+    UpdateFPS mUpdateFPS;
 
     // show line view
     ShowLineView mShowLineView;
@@ -69,10 +63,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mUpdateFPS = new UpdateFPS();
+        mUpdateFPS.Init((TextView)findViewById(R.id.progress_update_fps));
         mSwitchButton = (Switch)findViewById(R.id.switch_show_fps);
-        mBar25CodeView = (TextView)findViewById(R.id.bar25_code);
         mShowLineView = (ShowLineView)findViewById(R.id.show_line_view);
-        mProgressBarPos = (TextView)findViewById(R.id.text_progress_bar);
+        mProgressBarPos = (TextView)findViewById(R.id.text_progress_pos);
         mShowLineView.SetPreviewShortSideLength(mPreviewHeight);
         mSwitchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -185,10 +180,9 @@ public class MainActivity extends AppCompatActivity {
                     // Size s = camera.getParameters().getPreviewSize();
                     // Log.i(TAG, "onPreviewFrame, preview size width: " + s.width + ", height: " + s.height);
                     mShowLineView.UpdateYUVImageData(bytes, mPreviewWidth, mPreviewHeight);
-                    String code = mShowLineView.GetBar25Code();
                     int pos = mShowLineView.GetProgressBarPos();
                     mProgressBarPos.setText(String.format("%d", pos));
-                    mBar25CodeView.setText("> " + code + " <");
+                    mUpdateFPS.UpdatePos(pos);
                     mShowLineView.InvalidateView();
                 }
             }

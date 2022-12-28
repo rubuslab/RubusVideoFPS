@@ -83,7 +83,7 @@ public class ITF25ProgressBarsDecoder {
         // medianWidth = 18M/99, (9,11 - 22,27)/99, greater than medianWidth is big bar, else is small bar
         float M = b0.width + b1.width + b2.width + b3.width + b4.width + b5.width + b6.width;
         float medianWidth = M * 18.0f / 99.0f;
-        Log.e(TAG, String.format("median width: %5.3f", medianWidth));
+        // Log.e(TAG, String.format("median width: %5.3f", medianWidth));
         b0.code = (byte)(b0.width > medianWidth ? 1 : 0); if (b0.code != 0) return false;  // 0: small bar, 1: big bar
         b2.code = (byte)(b2.width > medianWidth ? 1 : 0); if (b2.code != 1) return false;
         b4.code = (byte)(b4.width > medianWidth ? 1 : 0);

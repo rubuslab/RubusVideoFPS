@@ -14,12 +14,13 @@ import androidx.annotation.RequiresApi;
 
 public class ShowLineView extends View {
     String TAG = "ShowLineView";
-    private Paint mPaint;    ///< 画笔
+    private Paint mWhitePaint;
+    private Paint mBlackPaint;
+    private Paint mRedPaint;
 
     private int mBarPosToBorder = 20;
 
     int mPreviewImageShortSideLength = 0;
-    Interleaved25Bar m25Bar;
     ITF25ProgressBarsDecoder mItf25ProgressBar;
 
     // 在java代码里new的时候会用到
@@ -46,8 +47,12 @@ public class ShowLineView extends View {
     public ShowLineView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) { super(context, attrs, defStyleAttr, defStyleRes); onShowLineViewInit(); }
 
     private void onShowLineViewInit() {
-        mPaint = new Paint();
-        m25Bar = new Interleaved25Bar();
+        mWhitePaint = new Paint();
+        mWhitePaint.setColor(Color.WHITE);
+        mBlackPaint = new Paint();
+        mBlackPaint.setColor(Color.BLACK);
+        mRedPaint = new Paint();
+        mRedPaint.setColor(Color.parseColor("#F50808"));
         mItf25ProgressBar = new ITF25ProgressBarsDecoder();
     }
 
@@ -58,29 +63,24 @@ public class ShowLineView extends View {
         ///< 2.进行绘制
 
         // draw one gray line in YUV image
-        if (m25Bar.mPreviewLineBuffer != null && m25Bar.mPreviewImageShortSideLength > 0) {
+        if (mItf25ProgressBar.mPreviewLineBuffer != null && mItf25ProgressBar.mPreviewImageShortSideLength > 0) {
             // start draw line
-            for (int i = 0; i < m25Bar.mPreviewImageShortSideLength; ++i) {
-                int gray = m25Bar.mPreviewLineBuffer[i];
-                mPaint.setARGB(255, gray, gray, gray);
-
-                //canvas.drawPoint(i * 2, 10, mPaint);
-                //canvas.drawPoint(i * 2 + 1, 10, mPaint);
-
-                canvas.drawLine(i * 2, 10, i * 2, 110, mPaint);
-                canvas.drawLine(i * 2 + 1, 10, i * 2 + 1, 110, mPaint);
+            int h = getHeight();
+            for (int i = 0; i < mItf25ProgressBar.mPreviewImageShortSideLength; ++i) {
+                int gray = mItf25ProgressBar.mPreviewLineBuffer[i];
+                Paint paint = gray >= 255 ? mWhitePaint : mBlackPaint;
+                canvas.drawLine(i * 2, 10, i * 2, h, paint);
+                canvas.drawLine(i * 2 + 1, 10, i * 2 + 1, h, paint);
             }
         }
 
-        mPaint.setColor(Color.parseColor("#F50808"));
-        canvas.drawCircle(5,5, 5, mPaint);
+        canvas.drawCircle(5,5, 5, mRedPaint);
     }
 
     // set preview image short side length
     public void SetPreviewShortSideLength(int len) {
         mPreviewImageShortSideLength = len;
         mItf25ProgressBar.Initialize(len);
-        m25Bar.Initialize(len);
     }
 
     private void UpdateYUV(byte[] yData, int yImageWidth, int yImageHeight, short[] previewLineBuff) {
@@ -107,16 +107,10 @@ public class ShowLineView extends View {
     }
 
     public void UpdateYUVImageData(byte[] yData, int yImageWidth, int yImageHeight) {
-        UpdateYUV(yData, yImageWidth, yImageHeight, m25Bar.mPreviewLineBuffer);
         UpdateYUV(yData, yImageWidth, yImageHeight, mItf25ProgressBar.mPreviewLineBuffer);
     }
 
     public int GetProgressBarPos() { return mItf25ProgressBar.DecodeAndGetPos(); }
-
-    public String GetBar25Code() {
-        return m25Bar.Decode();
-    }
-
     public void InvalidateView() {
         super.invalidate();
     }
