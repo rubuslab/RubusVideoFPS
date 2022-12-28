@@ -1,4 +1,4 @@
-package com.example.rubusvideofps;
+package com.rubus.videofps;
 
 import android.content.Context;
 import android.graphics.Canvas;

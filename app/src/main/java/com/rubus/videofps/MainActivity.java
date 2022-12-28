@@ -1,4 +1,4 @@
-package com.example.rubusvideofps;
+package com.rubus.videofps;
 
 import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
 

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context="com.rubus.videofps.MainActivity">
 
     <Button
         android:id="@+id/button_start"
@@ -73,7 +73,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_stop" />
 
-    <com.example.rubusvideofps.ShowLineView
+    <com.rubus.videofps.ShowLineView
         android:id="@+id/show_line_view"
         android:layout_width="240dp"
         android:layout_height="42dp"
